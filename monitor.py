@@ -1,5 +1,6 @@
 import psutil
 import platform
+import math
 
 def get_username():
     return psutil.Process().username().split("\\")[1]
@@ -15,6 +16,6 @@ def get_system_info():
     return {
         "os":platform.system() + " " + platform.release(),
         "cpu":platform.processor(),
-        "ramsize":psutil.virtual_memory().total / (1024 ** 3),
+        "ramsize":round(psutil.virtual_memory().total / (1024 ** 3)),
         "name": psutil.Process().username().split("\\")[0]
     }
