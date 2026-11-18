@@ -34,3 +34,18 @@ def get_system_info():
         "cores": psutil.cpu_count(logical=False),
         "threads": psutil.cpu_count(logical=True)
     }
+
+def get_battery_info():
+    battery = psutil.sensors_battery()
+    if battery is not None:
+        return {
+            "percent": battery.percent,
+            "plugged": battery.power_plugged,
+            "secsleft": battery.secsleft
+        }
+    else:
+        return {
+            "percent": None,
+            "plugged": None,
+            "secsleft": None
+        }

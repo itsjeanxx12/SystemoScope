@@ -9,6 +9,7 @@ from PySide6.QtGui import QIcon, QFont
 
 from main_sidebar_ui import Ui_MainWindow
 from monitor import get_system_info
+from monitor import get_battery_info
 
 
 class MainWindow(QMainWindow):
@@ -219,6 +220,23 @@ class MainWindow(QMainWindow):
 
         return page
 
+    def create_health_page(self):
+        battery = get_battery_info()
+        page = QWidget()
+        page_layout = QVBoxLayout(page)
+        page_layout.setContentsMargins(20, 20, 20, 20)
+        page_layout.setSpacing(15)
+
+        heading = QLabel("System Health")
+        heading.setStyleSheet("""
+            font-size: 22px;
+            font-weight: bold;
+        """)
+        page_layout.addWidget(heading)
+        page_layout.addStretch()
+
+        return page
+
     def init_stacked_widget(self):
         while self.main_content.count():
             widget = self.main_content.widget(0)
@@ -231,6 +249,8 @@ class MainWindow(QMainWindow):
             if text == "Summary":
                 new_page = self.create_summary_page()
 
+            elif text == "Health":
+                new_page = self.create_health_page()
             else:
                 layout = QGridLayout()
                 label = QLabel(text=text)
