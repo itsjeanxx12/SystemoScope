@@ -232,7 +232,10 @@ class MainWindow(QMainWindow):
             font-size: 22px;
             font-weight: bold;
         """)
+        subtitle = QLabel("Monitor your system's health and battery.")
+        subtitle.setStyleSheet("color: #999999; font-size: 12px;")
         page_layout.addWidget(heading)
+        page_layout.addWidget(subtitle)
         page_layout.addStretch()
 
         return page
