@@ -4,12 +4,14 @@ from PySide6.QtWidgets import (
     QMainWindow, QApplication, QLabel, QListWidgetItem,
     QWidget, QGridLayout, QVBoxLayout, QFrame
 )
-from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import QIcon, QFont
+import pyqtgraph as pg
 
 from main_sidebar_ui import Ui_MainWindow
 from monitor import get_system_info
 from monitor import get_battery_info
+from monitor import get_cpu_temp
 
 
 class MainWindow(QMainWindow):
@@ -222,6 +224,7 @@ class MainWindow(QMainWindow):
 
     def create_health_page(self):
         battery = get_battery_info()
+        cpu_temp = get_cpu_temp()
         page = QWidget()
         page_layout = QVBoxLayout(page)
         page_layout.setContentsMargins(20, 20, 20, 20)
@@ -236,9 +239,93 @@ class MainWindow(QMainWindow):
         subtitle.setStyleSheet("color: #999999; font-size: 12px;")
         page_layout.addWidget(heading)
         page_layout.addWidget(subtitle)
+
+        grid = QGridLayout()
+        grid.setSpacing(12)
+
+        cards = []
+        if battery is not None and battery["percent"] is not None:
+            cards.append((
+                "BATTERY",
+                f'{battery["percent"]}%',
+                f'Time Left : {battery["secsleft"] // 3600}h {(battery["secsleft"] % 3600) // 60}m'
+            ))
+        else:
+            cards.append((
+                "BATTERY",
+                "No battery",
+                ""
+            ))
+
+        if cpu_temp is not None:
+            temp_val = f"{round(cpu_temp, 1)} °C"
+            temp_desc = "Normal temperature" if cpu_temp < 80 else "High temperature"
+        else:
+            temp_val = "N/A"
+            temp_desc = "Run as Administrator to read sensor"
+
+        cards.append((
+            "CPU TEMPERATURE",
+            temp_val,
+            temp_desc
+        ))
+
+        for index, (title, value, description) in enumerate(cards):
+            row = index // 2
+            column = index % 2
+
+            card = self.create_card(title, value, description)
+            if title == "CPU TEMPERATURE":
+                self.cpu_temp_card = card
+            grid.addWidget(card, row, column)
+
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(1, 1)
+
+        page_layout.addLayout(grid)
+
+        self.cpu_temp_history = [round(cpu_temp, 1)] if cpu_temp is not None else [0]
+
+        self.temp_plot = pg.PlotWidget()
+        self.temp_plot.setBackground("#292929")
+        self.temp_plot.setTitle("CPU Temperature (°C)", color="#ffffff", size="11pt")
+        self.temp_plot.setLabel("left", "Temperature (°C)", color="#aaaaaa")
+        self.temp_plot.setLabel("bottom", "Time (s)", color="#aaaaaa")
+        self.temp_plot.showGrid(x=True, y=True, alpha=0.2)
+        self.temp_plot.setYRange(0, 100)
+        self.temp_plot.setMinimumHeight(220)
+
+        pen = pg.mkPen(color="#ff5555", width=2)
+        self.temp_curve = self.temp_plot.plot(self.cpu_temp_history, pen=pen)
+
+        page_layout.addWidget(self.temp_plot)
         page_layout.addStretch()
 
+        self.health_timer = QTimer(self)
+        self.health_timer.timeout.connect(self.update_cpu_temp)
+        self.health_timer.start(1000)
+
         return page
+
+    def update_cpu_temp(self):
+        temp = get_cpu_temp()
+        labels = self.cpu_temp_card.findChildren(QLabel)
+        if temp is not None:
+            temp_rounded = round(temp, 1)
+            self.cpu_temp_history.append(temp_rounded)
+            if len( labels ) >= 3:
+                labels[1].setText(f"{temp_rounded} °C")
+                labels[2].setText("Normal temperature" if temp_rounded < 80 else "High temperature")
+        else:
+            self.cpu_temp_history.append(0)
+            if len( labels ) >= 3:
+                labels[1].setText("N/A")
+                labels[2].setText("Run as Administrator to read sensor")
+
+        if len(self.cpu_temp_history) > 60:
+            self.cpu_temp_history.pop(0)
+
+        self.temp_curve.setData(self.cpu_temp_history)
 
     def init_stacked_widget(self):
         while self.main_content.count():

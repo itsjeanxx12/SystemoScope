@@ -1,6 +1,7 @@
 import psutil
 import platform
 import getpass
+import WinTmp
 
 
 def get_username():
@@ -49,3 +50,10 @@ def get_battery_info():
             "plugged": None,
             "secsleft": None
         }
+
+
+def get_cpu_temp():
+    try:
+        return WinTmp.CPU_Temp()
+    except Exception:
+        return None
