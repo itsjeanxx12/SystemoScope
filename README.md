@@ -46,6 +46,24 @@ NVIDIA GPU temperature can also be read through NVML when a supported NVIDIA dri
 
 Battery health depends on the battery information exposed by the laptop firmware and Windows.
 
+## Bundling LibreHardwareMonitor
+
+SystemoScope can use [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) to read hardware sensors that Windows does not expose through standard APIs, including CPU/GPU temperatures and fan speeds.
+
+For a portable release, you can distribute LibreHardwareMonitor alongside SystemoScope:
+
+```text
+SystemoScope/
+├── SystemoScope.exe
+└── LibreHardwareMonitor/
+    ├── LibreHardwareMonitor.exe
+    └── other files from the official release
+```
+
+Use the complete contents of an official LibreHardwareMonitor release rather than copying only its executable. Users should run LibreHardwareMonitor with the permissions needed for their hardware sensors, then launch SystemoScope. Sensor availability still depends on the computer and its drivers.
+
+LibreHardwareMonitor is a separate third-party project and is not included in the Python application itself. When redistributing it, include its applicable license and third-party notices, retain required copyright notices, and follow the [Mozilla Public License 2.0](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor/blob/master/LICENSE) and any other applicable license terms. Check the license files included with the exact release you distribute.
+
 ## Built with
 
 - Python
