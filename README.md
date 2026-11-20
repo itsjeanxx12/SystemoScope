@@ -40,7 +40,7 @@ python main.py
 
 ## Hardware sensor notes
 
-Windows does not expose every laptop's CPU temperature, GPU temperature, or fan speed through standard system APIs. For those readings, run **LibreHardwareMonitor** in the background. SystemoScope checks its WMI interface (and the OpenHardwareMonitor-compatible namespace). Some systems may require running the sensor monitor with administrator permissions.
+Windows does not expose every laptop's CPU temperature, GPU temperature, or fan speed through standard system APIs. For those readings, run **LibreHardwareMonitor** in the background. SystemoScope reads its local HTTP JSON endpoint at `http://127.0.0.1:8085/data.json`. In LibreHardwareMonitor, open **Options → Remote Web Server → Run** and keep it running while using SystemoScope. Some systems may require running LibreHardwareMonitor with administrator permissions.
 
 NVIDIA GPU temperature can also be read through NVML when a supported NVIDIA driver is installed. If a sensor is not available, SystemoScope displays **Unavailable** instead of estimating a value.
 
