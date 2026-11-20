@@ -260,12 +260,12 @@ class MainWindow(QMainWindow):
         page, layout = self._page("Your PC at a glance", "A quick overview of your system.")
         info = self.monitor.static_info()
         definitions = [
-            ("os", "Operating system", info["os"], "Installed operating system"),
-            ("cpu", "Processor", info["processor"], f'{info["physical_cores"]} cores / {info["logical_cores"]} threads'),
-            ("ram", "Memory", "—", "Memory usage"),
-            ("storage", "Storage", "—", "System drive usage"),
-            ("device", "Device", info["computer"], "Computer name"),
-            ("architecture", "Architecture", info["architecture"], "System architecture"),
+            ("os", "OPERATING SYSTEM", info["os"], "Installed operating system"),
+            ("cpu", "PROCESSOR", info["cpu"], f'{info["cores"]} cores / {info["threads"]} threads'),
+            ("ram", "MEMORY", f'{info["ramsize"]} GB RAM', f'{info["ramused"]} GB used / {info["ramfree"]} GB available'),
+            ("storage", "STORAGE", f'{info["disk"]} GB', f'{info["diskused"]} GB used / {info["diskfree"]} GB free (C:)'),
+            ("device", "DEVICE", info["name"], f'Current user: {info["username"]}'),
+            ("architecture", "ARCHITECTURE", info["architecture"], "System architecture"),
         ]
         self._add_cards(layout, definitions, self.summary_cards)
         layout.addStretch()
