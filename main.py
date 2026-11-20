@@ -50,6 +50,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(APP_NAME)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        self.setWindowTitle(APP_NAME)
         self.resize(1050, 700)
         self.setMinimumSize(900, 600)
 
@@ -405,17 +406,17 @@ class MainWindow(QMainWindow):
             self.ui.statusbar.showMessage(f"Monitoring update failed: {error}", 5000)
 
     def update_summary(self, data):
-        self.summary_cards["ram"].value_label.setText(f'{data["ram_percent"]:.1f}%')
+        self.summary_cards["ram"].value_label.setText(f'{data["ram_total"] / (1024 ** 3):.1f} GB RAM')
         self.summary_cards["ram"].description_label.setText(
-            f'{fmt_bytes(data["ram_used"])} used / {fmt_bytes(data["ram_total"])} total'
+            f'{data["ram_used"] / (1024 ** 3):.1f} GB used / {data["ram_available"] / (1024 ** 3):.1f} GB available'
         )
         system_disk = next((disk for disk in data["disks"] if disk["mount"].lower().startswith("c:")), None)
         if system_disk is None and data["disks"]:
             system_disk = data["disks"][0]
         if system_disk:
-            self.summary_cards["storage"].value_label.setText(f'{system_disk["percent"]:.1f}% used')
+            self.summary_cards["storage"].value_label.setText(f'{system_disk["total"] / (1024 ** 3):.1f} GB')
             self.summary_cards["storage"].description_label.setText(
-                f'{fmt_bytes(system_disk["free"])} free / {fmt_bytes(system_disk["total"])} total'
+                f'{system_disk["used"] / (1024 ** 3):.1f} GB used / {system_disk["free"] / (1024 ** 3):.1f} GB free (C:)'
             )
         else:
             self.summary_cards["storage"].value_label.setText("Unavailable")
