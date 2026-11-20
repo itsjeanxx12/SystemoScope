@@ -1,3 +1,4 @@
+![](shots/summary.png)
 # SystemoScope
 
 SystemoScope is a lightweight Windows desktop system monitor built with Python and PySide6. It gives you a quick view of your computer's resources, hardware sensors, network activity, running processes, and installed applications.
@@ -10,6 +11,8 @@ SystemoScope is a lightweight Windows desktop system monitor built with Python a
 - **Performance** — CPU usage per logical processor, memory and swap usage, and a live process list.
 - **Diagnostics** — basic checks for CPU, memory, storage, battery, and temperature sensor availability.
 - **Software** — installed applications registered in Windows, with search.
+
+![](shots/performance.png)
 
 ## Requirements
 
