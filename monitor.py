@@ -4,6 +4,9 @@ import socket
 import getpass
 import subprocess
 import time
+import json
+import re
+import urllib.request
 from datetime import datetime
 
 import psutil
@@ -23,32 +26,61 @@ def _run_powershell(command, timeout=4):
         return ""
 
 
-def _hardware_sensors():
-    result = {"cpu_temp": None, "gpu_temp": None, "fans": []}
+def _sensor_number(value):
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    match = re.search(r"[-+]?\d+(?:[.,]\d+)?", str(value))
+    if not match:
+        return None
     try:
-        import wmi
-        for namespace in (r"root\LibreHardwareMonitor", r"root\OpenHardwareMonitor"):
-            try:
-                client = wmi.WMI(namespace=namespace)
-                for sensor in client.Sensor():
-                    kind = str(getattr(sensor, "SensorType", "")).lower()
-                    name = str(getattr(sensor, "Name", ""))
-                    value = getattr(sensor, "Value", None)
-                    if value is None:
-                        continue
-                    value = float(value)
-                    label = name.lower()
-                    if kind == "temperature":
-                        if "cpu" in label and result["cpu_temp"] is None:
-                            result["cpu_temp"] = value
-                        elif "gpu" in label and result["gpu_temp"] is None:
-                            result["gpu_temp"] = value
-                    elif kind == "fan":
-                        result["fans"].append({"name": name, "rpm": value})
-                if result["cpu_temp"] is not None or result["gpu_temp"] is not None or result["fans"]:
-                    break
-            except Exception:
+        return float(match.group(0).replace(",", "."))
+    except ValueError:
+        return None
+
+
+def _hardware_sensors():
+    result = {"cpu_temp": None, "gpu_temp": None, "fans": [], "source": "Unavailable"}
+    url = "http://127.0.0.1:8085/data.json"
+    try:
+        request = urllib.request.Request(url, headers={"User-Agent": "SystemoScope/1.0"})
+        with urllib.request.urlopen(request, timeout=2.5) as response:
+            tree = json.loads(response.read().decode("utf-8", errors="replace"))
+
+        sensors = []
+
+        def walk(node, hardware=""):
+            if not isinstance(node, dict):
+                return
+            current_hardware = hardware
+            if "SensorId" not in node and node.get("Text"):
+                current_hardware = str(node["Text"])
+            if "SensorId" in node:
+                sensors.append((current_hardware, node))
+            children = node.get("Children", [])
+            if isinstance(children, list):
+                for child in children:
+                    walk(child, current_hardware)
+
+        walk(tree)
+        for hardware, sensor in sensors:
+            kind = str(sensor.get("Type", "")).lower()
+            name = str(sensor.get("Text", "Unknown"))
+            value = _sensor_number(sensor.get("Value"))
+            if value is None:
                 continue
+            label = f"{hardware} {name}".lower()
+            if kind == "temperature":
+                if result["cpu_temp"] is None and any(word in label for word in ("cpu", "processor", "core")):
+                    result["cpu_temp"] = value
+                if result["gpu_temp"] is None and any(word in label for word in ("gpu", "graphics", "video card")):
+                    result["gpu_temp"] = value
+            elif kind == "fan":
+                result["fans"].append({"name": f"{hardware} - {name}" if hardware else name, "rpm": value})
+
+        if sensors:
+            result["source"] = "LibreHardwareMonitor"
     except Exception:
         pass
 
@@ -61,12 +93,12 @@ def _hardware_sensors():
                 result["gpu_temp"] = float(
                     pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
                 )
+                result["source"] = "NVML"
             finally:
                 pynvml.nvmlShutdown()
         except Exception:
             pass
     return result
-
 
 def _battery_details():
     try:
