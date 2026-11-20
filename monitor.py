@@ -187,10 +187,28 @@ class SystemMonitor:
             except (psutil.Error, OSError):
                 pass
 
-    @staticmethod
-    def static_info():
-        info = _system_details()
-        return info
+    def static_info(self):
+        info = self._system_cache
+        memory = psutil.virtual_memory()
+        try:
+            disk = psutil.disk_usage(os.environ.get("SystemDrive", "C:") + os.sep)
+        except Exception:
+            disk = None
+        return {
+            "os": info["os"],
+            "cpu": info["processor"],
+            "cores": info["physical_cores"],
+            "threads": info["logical_cores"],
+            "ramsize": round(memory.total / (1024 ** 3), 1),
+            "ramused": round(memory.used / (1024 ** 3), 1),
+            "ramfree": round(memory.available / (1024 ** 3), 1),
+            "disk": round(disk.total / (1024 ** 3), 1) if disk else "N/A",
+            "diskused": round(disk.used / (1024 ** 3), 1) if disk else "N/A",
+            "diskfree": round(disk.free / (1024 ** 3), 1) if disk else "N/A",
+            "name": info["computer"],
+            "username": getpass.getuser(),
+            "architecture": info["architecture"],
+        }
 
     def snapshot(self):
         now = time.monotonic()
