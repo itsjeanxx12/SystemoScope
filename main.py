@@ -102,7 +102,7 @@ class MainWindow(QMainWindow):
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.refresh)
-        self.timer.start(2000)
+        self.timer.start(30000)
 
     def _apply_style(self):
         self.setStyleSheet("""
@@ -112,6 +112,7 @@ class MainWindow(QMainWindow):
                 font-family: "Segoe UI";
                 font-size: 12px;
             }
+            QLabel { background-color: transparent; border: none; }
             QFrame#title_frame {
                 background-color: #252525;
                 border: 0;
@@ -210,19 +211,19 @@ class MainWindow(QMainWindow):
     def create_card(self, title, value, description):
         card = QFrame()
         card.setObjectName("infoCard")
-        card.setMinimumHeight(112)
+        card.setMinimumHeight(125)
         layout = QVBoxLayout(card)
         layout.setContentsMargins(15, 12, 15, 12)
         layout.setSpacing(7)
 
         title_label = QLabel(title.upper())
-        title_label.setStyleSheet("color: #aaaaaa; font-size: 11px;")
+        title_label.setStyleSheet("background: transparent; color: #aaaaaa; font-size: 12px;")
         value_label = QLabel(str(value))
         value_label.setWordWrap(True)
-        value_label.setStyleSheet("color: white; font-size: 19px; font-weight: bold;")
+        value_label.setStyleSheet("background: transparent; color: white; font-size: 19px; font-weight: bold;")
         description_label = QLabel(str(description))
         description_label.setWordWrap(True)
-        description_label.setStyleSheet("color: #999999; font-size: 11px;")
+        description_label.setStyleSheet("background: transparent; color: #888888; font-size: 11px;")
 
         layout.addWidget(title_label)
         layout.addWidget(value_label)
@@ -256,7 +257,7 @@ class MainWindow(QMainWindow):
         layout.addLayout(grid)
 
     def create_summary_page(self):
-        page, layout = self._page("Your PC at a glance", "A live overview of your computer.")
+        page, layout = self._page("Your PC at a glance", "A quick overview of your system.")
         info = self.monitor.static_info()
         definitions = [
             ("os", "Operating system", info["os"], "Installed operating system"),
