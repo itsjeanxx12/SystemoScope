@@ -15,7 +15,8 @@ from PySide6.QtWidgets import (
 from monitor import SystemMonitor
 
 
-APP_STYLE = """"Q"M"ainWindow, QWidget { background: #0b1020; color: #e6eaf2; font-family: "Segoe UI"; font-size: 13px; }
+APP_STYLE = """
+QMainWindow, QWidget { background: #0b1020; color: #e6eaf2; font-family: "Segoe UI"; font-size: 13px; }
 QFrame#Sidebar { background: #0e1528; border-right: 1px solid #202b43; }
 QLabel#Brand { font-size: 22px; font-weight: 750; color: #f4f7ff; padding: 8px 4px 22px; }
 QLabel#Muted { color: #8c9ab5; }
@@ -334,8 +335,9 @@ class SystemScope(QMainWindow):
         if battery["present"]:
             status = "Charging" if battery["plugged"] else "Discharging"
             health = f' · {battery["health"]:.0f}% health' if battery["health"] is not None else ""
-            self._set_card("battery", f'{battery["percent"]:.0f}%', status set_card("battery", "Not detected", "Battery information unavailable")
-
+            self._set_card("battery", f'{battery["percent"]:.0f}%', status + health)
+        else:
+            self._set_card("battery", "Not detected", "Battery information unavailable")
         self._set_card("cpu_temp", f'{data["cpu_temp"]:.1f} °C' if data["cpu_temp"] is not None else "Unavailable",
                        "CPU package / core sensor")
         self._set_card("gpu_temp", f'{data["gpu_temp"]:.1f} °C' if data["gpu_temp"] is not None else "Unavailable",
@@ -462,4 +464,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
