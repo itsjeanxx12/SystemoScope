@@ -286,8 +286,8 @@ class MainWindow(QMainWindow):
         self._add_cards(layout, definitions, self.health_cards, 3)
 
         note = QLabel(
-            "Temperature and fan readings require hardware sensor support. On Windows, run "
-            "LibreHardwareMonitor in the background (preferably as administrator). "
+            "Temperature and fan readings require hardware sensor support. In LibreHardwareMonitor, "
+            "enable Options → Remote Web Server → Run (default port 8085). "
             "Unsupported readings are displayed as unavailable."
         )
         note.setWordWrap(True)
@@ -541,7 +541,7 @@ class MainWindow(QMainWindow):
         try:
             temp = self.monitor.snapshot()["cpu_temp"]
             checks.append(("CPU temperature", "Detected" if temp is not None else "Unavailable",
-                           f'{temp:.1f} °C' if temp is not None else "No supported sensor found"))
+                           f'{temp:.1f} °C' if temp is not None else "No sensor found. Check LibreHardwareMonitor and its Remote Web Server (port 8085)."))
         except Exception as error:
             checks.append(("CPU temperature", "Unavailable", str(error)))
 
