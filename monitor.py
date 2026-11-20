@@ -1,5 +1,7 @@
 import os
 import platform
+import socket
+import getpass
 import subprocess
 import time
 from datetime import datetime
@@ -135,7 +137,7 @@ def _network_adapters():
     stats = psutil.net_if_stats()
     for name, entries in addresses.items():
         state = stats.get(name)
-        ipv4 = next((entry.address for entry in entries if entry.family == psutil.AF_INET), "—")
+        ipv4 = next((entry.address for entry in entries if entry.family == socket.AF_INET), "—")
         if ipv4.startswith("127."):
             continue
         adapters.append((
@@ -177,6 +179,7 @@ class SystemMonitor:
     def __init__(self):
         self._last_net = psutil.net_io_counters()
         self._last_time = time.monotonic()
+        self._system_cache = _system_details()
         psutil.cpu_percent(interval=None)
         for process in psutil.process_iter():
             try:
@@ -230,7 +233,7 @@ class SystemMonitor:
                 "recv": net.bytes_recv if net else 0,
             },
             "network_adapters": _network_adapters(),
-            "system": _system_details(),
+            "system": self._system_cache,
         }
 
     @staticmethod
